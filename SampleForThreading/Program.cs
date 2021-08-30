@@ -22,7 +22,7 @@ namespace SampleForThreading
                 Console.WriteLine("X");
             }
         }*/
-            var locker = new object();
+            object locker = new object();
             var figureCalc = new FigureCalculator(locker);
             figureCalc.PrintFigures();
             ThreadPool.QueueUserWorkItem(_ =>
