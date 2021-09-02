@@ -9,7 +9,6 @@ namespace SampleForThreading
     {
         public void GetDeadlockSample()
         {
-
             var locker1 = new object();
             var locker2 = new object();
 
