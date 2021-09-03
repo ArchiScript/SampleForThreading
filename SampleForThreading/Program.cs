@@ -26,7 +26,7 @@ namespace SampleForThreading
 
             //========= ДЗ Генерировать и считать среднее арифм =====================
 
-           /* long[] arr = new long[100000000];
+            long[] arr = new long[100000000];
             long[] arr2 = new long[10000000];
             long sum = 0;
             decimal average;
@@ -77,7 +77,7 @@ namespace SampleForThreading
                 Console.WriteLine($"среднее арифметическое {sum} / {arr.Length} = {average}");
             });
 
-            Console.ReadLine();*/
+            Console.ReadLine();
 
 
 

@@ -22,14 +22,14 @@ namespace SampleForThreading
             {
                 t.Start();
             }*/
-            Semaphore semaphore = new Semaphore(0, maxConcurrent);
+          /*  Semaphore semaphore = new Semaphore(0, maxConcurrent);
 
             for (int i = 1; i < Amount; i++)
             {
                 Thread t = new Thread(new ParameterizedThreadStart(???));
                 t.Start(i);
             }
-
+*/
 
 
         }
