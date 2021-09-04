@@ -9,27 +9,26 @@ namespace SampleForThreading
 {
     class JobExecutor : IJobExecutor
     {
+        static ConcurrentQueue<Task> tasksQueue = new ConcurrentQueue<Task>();
         public int Amount { get; }
         public void Start(int maxConcurrent)
         {
-            /*Task[] taskArray = new Task[maxConcurrent];
+
+            Task[] taskArray = new Task[Amount];
             foreach (var task in taskArray)
             {
-                task.Start();
+                tasksQueue.Enqueue(task);
             }
-            ConcurrentQueue<Task> tasks = new ConcurrentQueue<Task>();
-            foreach (var t in tasks)
+
+            foreach (var t in tasksQueue)
             {
                 t.Start();
-            }*/
-          /*  Semaphore semaphore = new Semaphore(0, maxConcurrent);
-
-            for (int i = 1; i < Amount; i++)
-            {
-                Thread t = new Thread(new ParameterizedThreadStart(???));
-                t.Start(i);
             }
-*/
+            ParallelOptions opts = new ParallelOptions { MaxDegreeOfParallelism = maxConcurrent };
+            /* Parallel.For(0, opts, )
+             {
+
+             }*/
 
 
         }
@@ -38,10 +37,11 @@ namespace SampleForThreading
         }
         public void Add(Action action)
         {
+            //tasksQueue.Enqueue(new Task(action));
         }
         public void Clear()
         {
-           
+
         }
     }
 }
