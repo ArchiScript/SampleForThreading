@@ -9,39 +9,35 @@ namespace SampleForThreading
 {
     class JobExecutor : IJobExecutor
     {
-        static ConcurrentQueue<Task> tasksQueue = new ConcurrentQueue<Task>();
-        public int Amount { get; }
+        static ConcurrentQueue<Task> tasks = new ConcurrentQueue<Task>();
+        public int Amount { get; private set; }
         public void Start(int maxConcurrent)
         {
-
+            
             Task[] taskArray = new Task[Amount];
             foreach (var task in taskArray)
             {
-                tasksQueue.Enqueue(task);
+                tasks.Enqueue(task);
             }
-
-            foreach (var t in tasksQueue)
-            {
-                t.Start();
-            }
+            Amount = tasks.Count;
             ParallelOptions opts = new ParallelOptions { MaxDegreeOfParallelism = maxConcurrent };
-            /* Parallel.For(0, opts, )
-             {
 
-             }*/
-
+            Parallel.ForEach(tasks, opts, x => x.Start());
+            Thread.Sleep(200);
 
         }
         public void Stop()
         {
+            
         }
         public void Add(Action action)
         {
-            //tasksQueue.Enqueue(new Task(action));
+            tasks.Enqueue(new Task(action));
         }
         public void Clear()
         {
-
+            tasks.Clear();
+            Thread.Sleep(50);
         }
     }
 }
