@@ -26,10 +26,7 @@ namespace SampleForThreading
             Thread.Sleep(200);
 
         }
-        public void Stop()
-        {
-            
-        }
+        public void Stop() { }
         public void Add(Action action)
         {
             tasks.Enqueue(new Task(action));
@@ -37,7 +34,7 @@ namespace SampleForThreading
         public void Clear()
         {
             tasks.Clear();
-            Thread.Sleep(50);
+            Thread.Sleep(100);
         }
     }
 }
