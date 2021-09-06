@@ -22,9 +22,9 @@ namespace SampleForThreading
             //========= ДЗ Генерировать и считать среднее арифм =====================
 
             long[] arr = new long[100000000];
-            long[] arr2 = new long[10000000];
+            int[] arr2 = new int[10000000];
             long sum = 0;
-            decimal average;
+            decimal average = 0;
 
             // ------------- реализация 1 
 
@@ -33,20 +33,20 @@ namespace SampleForThreading
                 arr[i] = i;
             }
 
-            for (int i = 0; i < arr.Length; i++)
+            /*for (int i = 0; i < arr.Length; i++)
             {
                 sum += arr[i];
             }
 
-            average = sum / arr.Length;
+            average = sum / arr.Length;*/
 
 
-            Console.WriteLine($"среднее арифметическое {sum} / {arr.Length} = {average}");
+            // Console.WriteLine($"среднее арифметическое {sum} / {arr.Length} = {average}");
 
             //------------- реализация 2 с многопоточностью
 
 
-            ThreadPool.QueueUserWorkItem(_ =>
+            /*ThreadPool.QueueUserWorkItem(_ =>
             {
                 lock (locker)
                 {
@@ -71,38 +71,71 @@ namespace SampleForThreading
                 average = sum / arr.Length;
                 Console.WriteLine($"среднее арифметическое {sum} / {arr.Length} = {average}");
             });
-            Thread.Sleep(1000);
+            Thread.Sleep(1000);*/
             //Console.ReadLine();
-
-
+            long  ind=0;
+            //var res = Parallel.For(0, arr.Length, () => 0, (i, state, locsum) => { return locsum + i; Console.WriteLine(i); }, (locsum) => { lock (locker) { sum += locsum; Console.WriteLine($"{locsum} {sum}"); } });
+            var res2 = Parallel.For<long>(0, arr.Length, () => 0,
+                (i, state, locsum) =>
+                {
+                     ind = 0;
+                    ind += i;
+                    average = (i != 0) ? sum / arr[i] : 0;
+                    return locsum += arr[i];
+                    
+                },
+                (locsum) =>
+                {   
+                    sum += locsum;
+                    // average = sum / i;
+                    //Console.WriteLine($" {locsum} {sum} {average} {ind}");
+                }
+                );
+            //Console.WriteLine(res2);
+            var res3 = Parallel.For<long>(0, arr.Length, () => 0,
+                (i, state, locsum) =>
+                {
+                    ind = 0;
+                    ind += i;
+                    average = (i != 0) ? sum / arr[i] : 0;
+                    return locsum += arr[i];
+                },
+                (locsum) =>
+                {
+                    Interlocked.Add(ref sum, locsum);
+                    average = sum / arr.Length;
+                    Console.WriteLine($"Лок: {locsum} Общ: {sum} Сред: {average} Инд: {ind}");
+                }
+                 );
+            //Console.WriteLine(sum);
             //Parallel.ForEach(tasks, new ParallelOptions { MaxDegreeOfParallelism = 6 }, x => x.Start());
 
             //==================== JobExecutor вызов ==========================================
 
-            var executor = new JobExecutor();
+            /* var executor = new JobExecutor();
 
-            executor.Add(() => Console.WriteLine("Восхищение!"));
+             executor.Add(() => Console.WriteLine("Восхищение!"));
 
-            for (int i = 0; i < 5; i++)
-            {
-                executor.Add(() => Console.WriteLine($"Вперед товарищи, это задание {Task.CurrentId}"));
-            }
-            // executor.Start(8);
-            Console.WriteLine($"На данный момент в очереди {executor.Amount} задач");
-            executor.Clear();
+             for (int i = 0; i < 5; i++)
+             {
+                 executor.Add(() => Console.WriteLine($"Вперед товарищи, это задание {Task.CurrentId}"));
+             }
+             // executor.Start(8);
+             Console.WriteLine($"На данный момент в очереди {executor.Amount} задач");
+             executor.Clear();
 
 
-            executor.Add(() => Console.WriteLine("Восхищение!"));
+             executor.Add(() => Console.WriteLine("Восхищение!"));
 
-            executor.Start(8);
-            Console.WriteLine($"На данный момент в очереди {executor.Amount} задач");
+             executor.Start(8);
+             Console.WriteLine($"На данный момент в очереди {executor.Amount} задач");*/
 
 
 
             //==================== Regex =============================
 
 
-            string input = "http://ya.ru/api?r=1&x=23";
+            /*string input = "http://ya.ru/api?r=1&x=23";
             string pattern = @"\?((\w+?={1}.+)\&?)*";
 
             Match match = Regex.Match(input, pattern);
@@ -123,9 +156,14 @@ namespace SampleForThreading
             string phoneNum3 = "00 (373) 777 74567";
             string phoneNum5 = "00 (373) 776 74567";
             bool isValid = Regex.Match(phoneNum5, numberPattern2).Success;
-            Console.WriteLine(isValid); // 776 - False
+            Console.WriteLine(isValid); // 776 - False*/
 
         }
+        /*public static int CalcSum(long index, long sum)
+        {
+            sum = 0;
+            return sum
+        }*/
 
     }
 }
