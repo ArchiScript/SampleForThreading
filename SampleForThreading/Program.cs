@@ -27,7 +27,7 @@ namespace SampleForThreading
             decimal average = 0;
             long sum2 = 0;
             decimal average2 = 0;
-           
+
             // ------------- реализация 1 
 
             for (int i = 0; i < arr.Length; i++)
@@ -41,61 +41,59 @@ namespace SampleForThreading
             }
 
             average = sum / arr.Length;*/
-
-
             // Console.WriteLine($"среднее арифметическое {sum} / {arr.Length} = {average}");
 
             //------------- реализация 2 с многопоточностью
 
-            /* long ind = 0;
-             long ind2 = 0;
+            long ind = 0;
+            long ind2 = 0;
 
-             //----------------- Вариант а -----------------------
+            //----------------- Вариант а -----------------------
 
-             var res1 = Parallel.For<long>(0, arr.Length, () => 0,
-                 (i, state, locsum) =>
-                 {
+            var res1 = Parallel.For<long>(0, arr.Length, () => 0,
+                (i, state, locsum) =>
+                {
 
-                     ind = 0;
-                     ind += i;
-                     average = (i != 0) ? sum / arr[i] : 0;
-                     return locsum += arr[i];
+                    ind = 0;
+                    ind += i;
+                    average = (i != 0) ? sum / arr[i] : 0;
+                    return locsum += arr[i];
 
-                 },
-                 (locsum) =>
-                 {
-                     lock (locker)
-                     {
-                         sum += locsum;
+                },
+                (locsum) =>
+                {
+                    lock (locker)
+                    {
+                        sum += locsum;
 
-                         Console.WriteLine($" {locsum} {sum} {average} {ind} ");
-                         average = sum / arr.Length;
-                     }
-                 }
+                        Console.WriteLine($" {locsum} {sum} {average} {ind} ");
+                        average = sum / arr.Length;
+                    }
+                }
+                );
+            Console.WriteLine($"{sum} {average}");
+
+            //----------------- Вариант б interlocked -----------------------
+
+            var res2 = Parallel.For<long>(0, arr.Length, () => 0,
+                (i, state, locsum) =>
+                {
+                    ind2 = 0;
+                    ind2 += arr[i];
+                    average2 = (i != 0) ? sum2 / arr[i] : 0;
+                    return locsum += arr[i];
+                },
+                (locsum) =>
+                {
+                    Interlocked.Add(ref sum2, locsum);
+                    average2 = sum / arr.Length;
+                    Console.WriteLine($"Лок: {locsum} Общ: {sum2} Сред: {average2} Инд: {ind2}");
+                }
                  );
-             Console.WriteLine($"{sum} {average}");
-
-             //----------------- Вариант б interlocked -----------------------
-
-             var res2 = Parallel.For<long>(0, arr.Length, () => 0,
-                 (i, state, locsum) =>
-                 {
-                     ind2 = 0;
-                     ind2 += arr[i];
-                     average2 = (i != 0) ? sum2 / arr[i] : 0;
-                     return locsum += arr[i];
-                 },
-                 (locsum) =>
-                 {
-                     Interlocked.Add(ref sum2, locsum);
-                     average2 = sum / arr.Length;
-                     Console.WriteLine($"Лок: {locsum} Общ: {sum2} Сред: {average2} Инд: {ind2}");
-                 }
-                  );
 
 
 
-             Console.WriteLine($"{sum2} {average2}");*/
+            Console.WriteLine($"{sum2} {average2}");
 
 
             //==================== JobExecutor вызов ==========================================
@@ -104,16 +102,21 @@ namespace SampleForThreading
             int count = 0;
             while (true)
             {
-                executor.Add(() => { Console.WriteLine($"Восхищение! {count}"); Thread.Sleep(rand.Next(200, 1500)); });
-                count += 1;
-                if (count==20)
+
+                // executor.Start(6);
+                if (count <= 5)
+                {
+                    executor.Add(() => { Thread.Sleep(rand.Next(200, 1500)); });
+                    count += 1;
+                }
+                else
                 {
                     executor.Stop();
+                    //return;
+                    
                 }
-                
-            }
-            
 
+            }
 
 
             //==================== Regex =============================
@@ -150,7 +153,7 @@ namespace SampleForThreading
 
 
         }
-        
+
 
     }
 }

@@ -9,76 +9,72 @@ namespace SampleForThreading
 {
     class JobExecutor : IJobExecutor
     {
+
+        private static bool stopAdd;
         public CancellationTokenSource cancellationTokenSource;
-        public static ConcurrentQueue<Task> tasks = new ConcurrentQueue<Task>();
+        public ConcurrentQueue<Task> tasks = new ConcurrentQueue<Task>();
         public int Amount { get; private set; }
         public void Start(int maxConcurrent)
         {
-
-
-            ParallelOptions opts = new ParallelOptions { MaxDegreeOfParallelism = maxConcurrent };
             cancellationTokenSource = new CancellationTokenSource();
-            opts.CancellationToken = cancellationTokenSource.Token;
-
-            try
+            ParallelOptions opts = new ParallelOptions
             {
+                MaxDegreeOfParallelism = maxConcurrent,
+                CancellationToken = cancellationTokenSource.Token
+            };
+
+            if (tasks.Count > 0)
+            {
+               
+                Parallel.ForEach(tasks, opts, x =>
+              {
+                  if (x.Status == TaskStatus.Created)
+                  {
+                        //opts.CancellationToken.ThrowIfCancellationRequested();
+
+                        x.Start(); Console.WriteLine($"{x.Id} Executing ..");
+                      Console.WriteLine($"_____________{x.Status}");
+                      
+                  }
+              });
+                              
                 Parallel.ForEach(tasks, opts, x =>
                 {
-                    if (x.Status == TaskStatus.Created)
+                    if (x.Status == TaskStatus.RanToCompletion)
                     {
-                        x.Start(); Console.WriteLine($"{x.Id} Started ..");
-                        opts.CancellationToken.ThrowIfCancellationRequested();
+
+                        tasks.TryDequeue(out x);
+                        Console.WriteLine($"{x.Id} Complete...  в очереди {tasks.Count}");
+
                     }
-
                 });
+               
             }
-            catch (OperationCanceledException e)
-            {
-
-                Console.WriteLine(e.Message);
-            }
-            finally
-            {
-                cancellationTokenSource.Dispose();
-            }
-
-
-            Parallel.ForEach(tasks, opts, x =>
-            {
-                if (x.Status == TaskStatus.RanToCompletion)
-                {
-                    Thread.Sleep(200);
-                    tasks.TryDequeue(out x);
-                    Console.WriteLine($"{x.Id} Complete.");
-                }
-            });
-
 
         }
-        public void Stop() {
-            /*Parallel.ForEach(tasks, null, x =>
-            {
-                if (x.Status != TaskStatus.RanToCompletion)
-                {
-                    x.Dispose() ;              
-                }
-
-            });*/
-            cancellationTokenSource.Cancel();
+        public void Stop()
+        {
+            stopAdd = true;
+            
+            //cancellationTokenSource.Cancel();
         }
         public void Add(Action action)
         {
-            var rand = new Random();
-            Task newTask = new Task(action);
-            tasks.Enqueue(newTask);
-            Console.WriteLine($"Задание добавлено в очередь, количество заданий в очереди {tasks.Count}");
-            Thread.Sleep(rand.Next(400, 2000));
-            Start(6);
+            if (stopAdd == false)
+            {
+                var rand = new Random();
+                Task newTask = new Task(action);
+                tasks.Enqueue(newTask);
+                Console.WriteLine($" Задание {newTask.Id} добавлено в очередь, количество заданий в очереди {tasks.Count}");
+
+               Start(5);
+                Thread.Sleep(rand.Next(400, 1600));
+            }
+            
         }
         public void Clear()
         {
             tasks.Clear();
-
         }
     }
 }
