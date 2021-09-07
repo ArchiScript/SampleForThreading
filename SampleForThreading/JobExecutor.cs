@@ -9,6 +9,7 @@ namespace SampleForThreading
 {
     class JobExecutor : IJobExecutor
     {
+        public CancellationTokenSource cancellationTokenSource;
         public static ConcurrentQueue<Task> tasks = new ConcurrentQueue<Task>();
         public int Amount { get; private set; }
         public void Start(int maxConcurrent)
@@ -16,16 +17,31 @@ namespace SampleForThreading
 
 
             ParallelOptions opts = new ParallelOptions { MaxDegreeOfParallelism = maxConcurrent };
+            cancellationTokenSource = new CancellationTokenSource();
+            opts.CancellationToken = cancellationTokenSource.Token;
 
-
-            Parallel.ForEach(tasks, opts, x =>
+            try
             {
-                if (x.Status == TaskStatus.Created)
+                Parallel.ForEach(tasks, opts, x =>
                 {
-                    x.Start(); Console.WriteLine($"{x.Id} Started ..");
-                }
+                    if (x.Status == TaskStatus.Created)
+                    {
+                        x.Start(); Console.WriteLine($"{x.Id} Started ..");
+                        opts.CancellationToken.ThrowIfCancellationRequested();
+                    }
 
-            });
+                });
+            }
+            catch (OperationCanceledException e)
+            {
+
+                Console.WriteLine(e.Message);
+            }
+            finally
+            {
+                cancellationTokenSource.Dispose();
+            }
+
 
             Parallel.ForEach(tasks, opts, x =>
             {
@@ -39,7 +55,17 @@ namespace SampleForThreading
 
 
         }
-        public void Stop() {  }
+        public void Stop() {
+            /*Parallel.ForEach(tasks, null, x =>
+            {
+                if (x.Status != TaskStatus.RanToCompletion)
+                {
+                    x.Dispose() ;              
+                }
+
+            });*/
+            cancellationTokenSource.Cancel();
+        }
         public void Add(Action action)
         {
             var rand = new Random();
