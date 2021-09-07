@@ -9,32 +9,50 @@ namespace SampleForThreading
 {
     class JobExecutor : IJobExecutor
     {
-        static ConcurrentQueue<Task> tasks = new ConcurrentQueue<Task>();
+        public static ConcurrentQueue<Task> tasks = new ConcurrentQueue<Task>();
         public int Amount { get; private set; }
         public void Start(int maxConcurrent)
         {
-            
-            Task[] taskArray = new Task[Amount];
-            foreach (var task in taskArray)
-            {
-                tasks.Enqueue(task);
-            }
-            Amount = tasks.Count;
+
+
             ParallelOptions opts = new ParallelOptions { MaxDegreeOfParallelism = maxConcurrent };
 
-            Parallel.ForEach(tasks, opts, x => x.Start());
-            Thread.Sleep(200);
+
+            Parallel.ForEach(tasks, opts, x =>
+            {
+                if (x.Status == TaskStatus.Created)
+                {
+                    x.Start(); Console.WriteLine($"{x.Id} Started ..");
+                }
+
+            });
+
+            Parallel.ForEach(tasks, opts, x =>
+            {
+                if (x.Status == TaskStatus.RanToCompletion)
+                {
+                    Thread.Sleep(200);
+                    tasks.TryDequeue(out x);
+                    Console.WriteLine($"{x.Id} Complete.");
+                }
+            });
+
 
         }
-        public void Stop() { }
+        public void Stop() {  }
         public void Add(Action action)
         {
-            tasks.Enqueue(new Task(action));
+            var rand = new Random();
+            Task newTask = new Task(action);
+            tasks.Enqueue(newTask);
+            Console.WriteLine($"Задание добавлено в очередь, количество заданий в очереди {tasks.Count}");
+            Thread.Sleep(rand.Next(400, 2000));
+            Start(6);
         }
         public void Clear()
         {
             tasks.Clear();
-            Thread.Sleep(100);
+
         }
     }
 }

@@ -22,10 +22,12 @@ namespace SampleForThreading
             //========= ДЗ Генерировать и считать среднее арифм =====================
 
             long[] arr = new long[100000000];
-            int[] arr2 = new int[10000000];
+            long[] arr2 = new long[10000000];
             long sum = 0;
             decimal average = 0;
-
+            long sum2 = 0;
+            decimal average2 = 0;
+           
             // ------------- реализация 1 
 
             for (int i = 0; i < arr.Length; i++)
@@ -45,90 +47,72 @@ namespace SampleForThreading
 
             //------------- реализация 2 с многопоточностью
 
+            /* long ind = 0;
+             long ind2 = 0;
 
-            /*ThreadPool.QueueUserWorkItem(_ =>
-            {
-                lock (locker)
-                {
-                    for (int i = 0; i < arr.Length; i++)
-                    {
-                        arr[i] = i;
-                    }
-                }
+             //----------------- Вариант а -----------------------
 
-                Thread.Sleep(1000);
-            });
-            ThreadPool.QueueUserWorkItem(_ =>
-            {
-                lock (locker)
-                {
-                    for (int i = 0; i < arr.Length; i++)
-                    {
-                        sum += arr[i];
-                    }
-                }
+             var res1 = Parallel.For<long>(0, arr.Length, () => 0,
+                 (i, state, locsum) =>
+                 {
 
-                average = sum / arr.Length;
-                Console.WriteLine($"среднее арифметическое {sum} / {arr.Length} = {average}");
-            });
-            Thread.Sleep(1000);*/
-            //Console.ReadLine();
-            long  ind=0;
-            //var res = Parallel.For(0, arr.Length, () => 0, (i, state, locsum) => { return locsum + i; Console.WriteLine(i); }, (locsum) => { lock (locker) { sum += locsum; Console.WriteLine($"{locsum} {sum}"); } });
-            var res2 = Parallel.For<long>(0, arr.Length, () => 0,
-                (i, state, locsum) =>
-                {
                      ind = 0;
-                    ind += i;
-                    average = (i != 0) ? sum / arr[i] : 0;
-                    return locsum += arr[i];
-                    
-                },
-                (locsum) =>
-                {   
-                    sum += locsum;
-                    // average = sum / i;
-                    //Console.WriteLine($" {locsum} {sum} {average} {ind}");
-                }
-                );
-            //Console.WriteLine(res2);
-            var res3 = Parallel.For<long>(0, arr.Length, () => 0,
-                (i, state, locsum) =>
-                {
-                    ind = 0;
-                    ind += i;
-                    average = (i != 0) ? sum / arr[i] : 0;
-                    return locsum += arr[i];
-                },
-                (locsum) =>
-                {
-                    Interlocked.Add(ref sum, locsum);
-                    average = sum / arr.Length;
-                    Console.WriteLine($"Лок: {locsum} Общ: {sum} Сред: {average} Инд: {ind}");
-                }
+                     ind += i;
+                     average = (i != 0) ? sum / arr[i] : 0;
+                     return locsum += arr[i];
+
+                 },
+                 (locsum) =>
+                 {
+                     lock (locker)
+                     {
+                         sum += locsum;
+
+                         Console.WriteLine($" {locsum} {sum} {average} {ind} ");
+                         average = sum / arr.Length;
+                     }
+                 }
                  );
-            //Console.WriteLine(sum);
-            //Parallel.ForEach(tasks, new ParallelOptions { MaxDegreeOfParallelism = 6 }, x => x.Start());
+             Console.WriteLine($"{sum} {average}");
+
+             //----------------- Вариант б interlocked -----------------------
+
+             var res2 = Parallel.For<long>(0, arr.Length, () => 0,
+                 (i, state, locsum) =>
+                 {
+                     ind2 = 0;
+                     ind2 += arr[i];
+                     average2 = (i != 0) ? sum2 / arr[i] : 0;
+                     return locsum += arr[i];
+                 },
+                 (locsum) =>
+                 {
+                     Interlocked.Add(ref sum2, locsum);
+                     average2 = sum / arr.Length;
+                     Console.WriteLine($"Лок: {locsum} Общ: {sum2} Сред: {average2} Инд: {ind2}");
+                 }
+                  );
+
+
+
+             Console.WriteLine($"{sum2} {average2}");*/
+
 
             //==================== JobExecutor вызов ==========================================
-
-            /* var executor = new JobExecutor();
-
-             executor.Add(() => Console.WriteLine("Восхищение!"));
-
-             for (int i = 0; i < 5; i++)
-             {
-                 executor.Add(() => Console.WriteLine($"Вперед товарищи, это задание {Task.CurrentId}"));
-             }
-             // executor.Start(8);
-             Console.WriteLine($"На данный момент в очереди {executor.Amount} задач");
-             executor.Clear();
-
-
-             executor.Add(() => Console.WriteLine("Восхищение!"));
-
-             executor.Start(8);
-             Console.WriteLine($"На данный момент в очереди {executor.Amount} задач");*/
+            var rand = new Random();
+            var executor = new JobExecutor();
+            int count = 0;
+            while (true)
+            {
+                executor.Add(() => { Console.WriteLine($"Восхищение! {count}"); Thread.Sleep(rand.Next(200, 1500)); });
+                count += 1;
+                if (count==20)
+                {
+                    executor.Stop();
+                }
+                
+            }
+            
 
 
 
@@ -158,12 +142,15 @@ namespace SampleForThreading
             bool isValid = Regex.Match(phoneNum5, numberPattern2).Success;
             Console.WriteLine(isValid); // 776 - False*/
 
+
+
+
+
+
+
+
         }
-        /*public static int CalcSum(long index, long sum)
-        {
-            sum = 0;
-            return sum
-        }*/
+        
 
     }
 }
