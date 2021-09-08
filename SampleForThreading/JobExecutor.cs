@@ -48,6 +48,17 @@ namespace SampleForThreading
 
                     }
                 });
+                Parallel.ForEach(tasks, opts, x =>
+                {
+                    if (stopAdd == true && tasks.Count > 0 && x.Status != TaskStatus.RanToCompletion)
+                    {
+                        /*Console.WriteLine("After stop executing");
+                        var ar = tasks.ToArray();
+                        Task.WaitAll(ar);*/
+                        x.Wait(); Console.WriteLine("After stop executing");
+                    }
+                });
+                
             }
         }
         public void Stop()
@@ -67,7 +78,7 @@ namespace SampleForThreading
             {
                 Task newTask = new Task(action);
                 tasks.Enqueue(newTask);
-                Console.WriteLine($"\n  Задание {newTask.Id} добавлено в очередь ______ {newTask.Status}, количество заданий в очереди {tasks.Count}");
+                Console.WriteLine($"\n  Задание {newTask.Id} добавлено в очередь ___ {newTask.Status}, количество заданий в очереди {tasks.Count}");
                 
                 Start(6); Thread.Sleep(rand.Next(100, 600));
             }
