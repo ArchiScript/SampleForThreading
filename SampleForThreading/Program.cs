@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 
+
 namespace SampleForThreading
 {
     //public delegate void Action();
@@ -50,7 +51,7 @@ namespace SampleForThreading
 
             //----------------- Вариант а -----------------------
 
-            var res1 = Parallel.For<long>(0, arr.Length, () => 0,
+           /* var res1 = Parallel.For<long>(0, arr.Length, () => 0,
                 (i, state, locsum) =>
                 {
 
@@ -93,26 +94,29 @@ namespace SampleForThreading
 
 
 
-            Console.WriteLine($"{sum2} {average2}");
+            Console.WriteLine($"{sum2} {average2}");*/
 
 
             //==================== JobExecutor вызов ==========================================
             var rand = new Random();
             var executor = new JobExecutor();
             int count = 0;
+           
             while (true)
             {
 
                 // executor.Start(6);
                 if (count <= 5)
                 {
-                    executor.Add(() => { Thread.Sleep(rand.Next(200, 1500)); });
+                    executor.Add(() => { Thread.Sleep(rand.Next(200, 400)); });
                     count += 1;
                 }
                 else
                 {
                     executor.Stop();
-                    //return;
+                  
+                    Thread.Sleep(5000);
+                   return;
                     
                 }
 
